@@ -1,0 +1,15 @@
+services:
+  my_sql_mr_cherry:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mr_cherry
+    ports:
+      - "3306:3306"
+
+  mysql_myadmin:
+    image: phpmyadmin:5.0.2
+    environment:
+      PMA_HOST: my_sql_mr_cherry
+    ports:
+      - "8085:80"
