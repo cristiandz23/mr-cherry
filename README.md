@@ -36,7 +36,8 @@ https://github.com/cristiandz23/mr-cherry.git
 ```bash
 ./mvnw spring-boot:run
 ```
-#### b. Si quieres hacerlo desde un IDE (de esta forma no necesitar tener instalado maven)
+#### b. Si quieres hacerlo desde un IDE (de esta forma no necesitar tener instalado maven). Solo ejecuta el metodo 
+ `main`
 
 
 
