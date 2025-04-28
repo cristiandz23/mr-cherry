@@ -11,7 +11,9 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @OneToOne
-    @JoinColumn(name = "person_id")
+    @JoinColumn(name = "user_id")
+    private User user;
+    @OneToOne
     private Person person;
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, orphanRemoval = false)
     private List<Order> orders;

@@ -15,11 +15,8 @@ public class Order {
     private Long id;
     @ManyToOne
     @JoinColumn(name = "customer_id")
+    @Column(nullable = true)
     private Customer customer;
-    @OneToOne(optional = true, cascade = CascadeType.ALL)
-    private Address address;
-    private String name;
-    private String phone;
     private LocalDate date;
     @OneToOne
     private Payment payment;

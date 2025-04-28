@@ -1,5 +1,6 @@
 package com.MrCherry.app.model;
 
+import com.MrCherry.app.model.enums.ProductCategory;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -15,5 +16,7 @@ public class Product {
     private BigDecimal price;
     private String description;
     private int stock;
+    @Enumerated(EnumType.STRING)
+    private ProductCategory category;
 
 }

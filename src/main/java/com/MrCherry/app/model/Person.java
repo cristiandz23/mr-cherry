@@ -3,6 +3,8 @@ package com.MrCherry.app.model;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "person")
 public class Person {
@@ -12,9 +14,9 @@ public class Person {
     private String name;
     private String lastName;
     private String phone;
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")
-    private Address address;
+    private List<Address> address;
 //    @OneToOne // Esto indica que esta relación es controlada por 'Person
 //    private User user;
 //    @OneToOne
