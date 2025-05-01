@@ -5,25 +5,25 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Entity
-public class Address {
+@Table(name = "contact_information")
+public class ContactInformation {
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false)
-    private String street;
+    private String name;
+    private String lastName;
     @Column(nullable = false)
-    private String number;
-    private String department;
-    private String floor;
-    private String zipCode;
-    @Column(nullable = false)
-    private String district;
-    private String description;
-
-
+    private String phone;
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<Address> address;
 
 }

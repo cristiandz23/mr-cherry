@@ -2,11 +2,18 @@ package com.MrCherry.app.model;
 
 import com.MrCherry.app.model.enums.ProductCategory;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.mapstruct.EnumMapping;
 
 import java.math.BigDecimal;
+import java.util.List;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
 @Entity
-@Table(name = "product")
 public class Product {
 
     @Id
@@ -14,9 +21,11 @@ public class Product {
     private Long id;
     private String name;
     private BigDecimal price;
-    private String description;
-    private int stock;
     @Enumerated(EnumType.STRING)
-    private ProductCategory category;
+    private ProductCategory productCategory;
+    private int stock;
+    private String description;
+    @OneToMany(cascade = CascadeType.ALL,orphanRemoval = false)
+    private List<Image> images;
 
 }
