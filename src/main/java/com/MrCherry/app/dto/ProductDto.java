@@ -1,18 +1,16 @@
 package com.MrCherry.app.dto;
 
-import com.MrCherry.app.model.Image;
 import com.MrCherry.app.model.enums.ProductCategory;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.OneToMany;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
-
+@NoArgsConstructor
+@Data
 public class ProductDto {
 
     private Long id;

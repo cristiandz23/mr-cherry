@@ -2,11 +2,15 @@ package com.MrCherry.app.dto;
 
 import com.MrCherry.app.model.ContactInformation;
 import com.MrCherry.app.model.enums.Role;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 
+@NoArgsConstructor
+@Data
 public class UserRequest {
 
     @Email @NotBlank @NotEmpty
