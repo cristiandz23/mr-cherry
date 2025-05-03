@@ -3,7 +3,6 @@ package com.MrCherry.app.service;
 
 import com.MrCherry.app.dto.OrderRequest;
 import com.MrCherry.app.dto.OrderResponse;
-import com.MrCherry.app.dto.UserResponse;
 import com.MrCherry.app.mapper.OrderMapper;
 import com.MrCherry.app.model.Order;
 import com.MrCherry.app.model.enums.OrderStatus;
@@ -11,10 +10,8 @@ import com.MrCherry.app.repository.OrderRepository;
 import com.MrCherry.app.service.servInterface.IOrderItemService;
 import com.MrCherry.app.service.servInterface.IOrderService;
 import com.MrCherry.app.service.servInterface.IProductService;
-import com.MrCherry.app.service.servInterface.IUserService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.jaxb.SpringDataJaxb;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -45,6 +42,8 @@ public class OrderService implements IOrderService {
         newOrder.setOrderDate(LocalDate.now());
         newOrder.setOrderStatus(CREATED);
         newOrder.setAmount(orderItemService.calculateAmount(orderRequest.getOrderItems()));
+        //IMPLEMENTAR METODO getSameMenu en OrderItemService
+        newOrder.setOrderItems(orderItemService.getSameMenu(orderRequest.getOrderItems()));
         newOrder = orderRepository.save(newOrder);
         return orderMapper.toResponse(newOrder);
     }
@@ -91,14 +90,7 @@ public class OrderService implements IOrderService {
 //        return List.of();
 //    }
 
-    @Override
-    public OrderResponse payOrder(Long id) {
-        Order order = orderRepository.findById(id).orElseThrow(
-                ()->new RuntimeException("No se encontro"));
-        productService.SaleProccess(order.getOrderItems());
-        return updateOrderStatus(order.getId(), PAYED);
 
-    }
 
     private OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus) {
 
@@ -107,8 +99,6 @@ public class OrderService implements IOrderService {
         if (!isValidTransition(order.getOrderStatus(), newStatus)) {
             throw new RuntimeException("IllegalStateException/Invalid state transition: " + order.getOrderStatus() + " → " + newStatus);
         }
-
-
         order.setOrderStatus(newStatus);
        return orderMapper.toResponse(orderRepository.save(order));
 
@@ -120,13 +110,23 @@ public class OrderService implements IOrderService {
         return switch (current) {
             case CREATED -> List.of(PAYED, CANCELED, REJECTED).contains(next);
             case PAYED ->   List.of(PROCESS,CANCELED).contains(next);
-            case PROCESS -> List.of(READY, CANCELED).contains(next);
-            case READY -> List.of(SENT).contains(next);
+            case PROCESS -> List.of(READY, CANCELED).contains(next);//ANALIZAR SI ES POSIBLE CANCEAR Y APLICAR LA LOGICA CORRESPONDIENTE
+            case READY -> List.of(SENT, DELIVERED).contains(next);
             case SENT -> List.of(DELIVERED).contains(next);
-            case CANCELED -> List.of(PROCESS).contains(next);
+            case CANCELED, REJECTED -> List.of(PROCESS).contains(next);
             default -> false;
 
         };
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse payOrder(Long id) {
+        Order order = orderRepository.findById(id).orElseThrow(
+                ()->new RuntimeException("No se encontro"));
+        productService.SaleProccess(order.getOrderItems());
+        return updateOrderStatus(order.getId(), PAYED);
+
     }
 
     @Override
@@ -138,9 +138,11 @@ public class OrderService implements IOrderService {
     @Transactional
     public OrderResponse cancelOrder(Long orderId) {
         OrderResponse order = this.updateOrderStatus(orderId, CANCELED);
-        productService.returnProduct(order.getOrderItems());
+        //oprtimizar esto
+        Order order1 = orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("no se encotro"));
+        productService.returnProcess(order1.getOrderItems());
         return order;
-        //implementar logica de
+
     }
 
     @Override

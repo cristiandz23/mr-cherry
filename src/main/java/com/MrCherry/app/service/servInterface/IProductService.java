@@ -26,5 +26,5 @@ public interface IProductService {
 
     //PROCESO DE VENTA
     void SaleProccess(List<OrderItem> orderItems);
-    void returnProduct(List<OrderItemDto> orderItems);
+    void returnProcess(List<OrderItem> orderItems);
 }
