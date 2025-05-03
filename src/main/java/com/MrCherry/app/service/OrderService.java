@@ -33,16 +33,21 @@ public class OrderService implements IOrderService {
     private IProductService productService;
 
 
+
+    private Order findOrder(Long orderId){
+        return orderRepository.findById(orderId).orElseThrow(
+                ()->new RuntimeException("No se encontro"));
+
+    }
+
     @Override
     public OrderResponse create(OrderRequest orderRequest) {
         if(orderRequest.getContactInformation() == null && orderRequest.getUser() == null)
             throw new RuntimeException("UNO TIENE QUE SER NO NULL");
-
         Order newOrder = orderMapper.toOrderFromRequest(orderRequest);
         newOrder.setOrderDate(LocalDate.now());
         newOrder.setOrderStatus(CREATED);
         newOrder.setAmount(orderItemService.calculateAmount(orderRequest.getOrderItems()));
-        //IMPLEMENTAR METODO getSameMenu en OrderItemService
         newOrder.setOrderItems(orderItemService.getSameMenu(orderRequest.getOrderItems()));
         newOrder = orderRepository.save(newOrder);
         return orderMapper.toResponse(newOrder);
@@ -50,8 +55,7 @@ public class OrderService implements IOrderService {
 
     @Override
     public void deleteById(Long id) {
-        Order order = orderRepository.findById(id).orElseThrow(
-                ()->new RuntimeException("No se encontro"));
+        Order order = findOrder(id);
         if(isValidElimination(order.getOrderStatus()))
             throw new RuntimeException("No se puede eliminar exception");
         orderRepository.delete(order);
@@ -65,37 +69,22 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public OrderResponse findByIs(Long id) {
-        Order order = orderRepository.findById(id).orElseThrow(
-                ()->new RuntimeException("No se encontro"));
+    public OrderResponse findById(Long id) {
+        Order order = findOrder(id);
         return orderMapper.toResponse(order);
     }
 
     @Override
     public List<OrderResponse> findAll() {
-        List<OrderResponse> orderResponses = new ArrayList<>();
-        List<Order> orders = orderRepository.findAll();
-        if(orders.isEmpty())
-            throw new RuntimeException("No se encontraron ordenes");
-
-        for(Order order : orders){
-            orderResponses.add(orderMapper.toResponse(order));
-        }
-        return orderResponses;
+        return orderRepository.findAll()
+                .stream()
+                .map(orderMapper::toResponse)
+                .toList();
     }
-
-//    @Override
-//    public List<OrderResponse> findByUser(Long userId) {
-//        UserResponse user = userService.findById(userId);
-//        return List.of();
-//    }
-
-
 
     private OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus) {
 
-        Order order = orderRepository.findById(orderId).orElseThrow(
-                ()->new RuntimeException("No se encontro"));
+        Order order = findOrder(orderId);
         if (!isValidTransition(order.getOrderStatus(), newStatus)) {
             throw new RuntimeException("IllegalStateException/Invalid state transition: " + order.getOrderStatus() + " → " + newStatus);
         }
@@ -113,7 +102,7 @@ public class OrderService implements IOrderService {
             case PROCESS -> List.of(READY, CANCELED).contains(next);//ANALIZAR SI ES POSIBLE CANCEAR Y APLICAR LA LOGICA CORRESPONDIENTE
             case READY -> List.of(SENT, DELIVERED).contains(next);
             case SENT -> List.of(DELIVERED).contains(next);
-            case CANCELED, REJECTED -> List.of(PROCESS).contains(next);
+//            case CANCELED, REJECTED -> List.of(PROCESS).contains(next); ANALIZAR RSTE CASO
             default -> false;
 
         };
@@ -122,8 +111,7 @@ public class OrderService implements IOrderService {
     @Override
     @Transactional
     public OrderResponse payOrder(Long id) {
-        Order order = orderRepository.findById(id).orElseThrow(
-                ()->new RuntimeException("No se encontro"));
+        Order order =findOrder(id);
         productService.SaleProccess(order.getOrderItems());
         return updateOrderStatus(order.getId(), PAYED);
 
@@ -137,11 +125,12 @@ public class OrderService implements IOrderService {
     @Override
     @Transactional
     public OrderResponse cancelOrder(Long orderId) {
-        OrderResponse order = this.updateOrderStatus(orderId, CANCELED);
         //oprtimizar esto
-        Order order1 = orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("no se encotro"));
-        productService.returnProcess(order1.getOrderItems());
-        return order;
+        Order order = findOrder(orderId);
+        productService.returnProcess(order.getOrderItems());
+         this.updateOrderStatus(order.getId(), CANCELED);
+
+        return orderMapper.toResponse(order);
 
     }
 

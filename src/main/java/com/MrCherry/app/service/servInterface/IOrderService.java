@@ -10,7 +10,7 @@ public interface IOrderService {
     // CRUD BASICO
     OrderResponse create(OrderRequest orderRequest);
     void deleteById(Long id);
-    OrderResponse findByIs(Long id);
+    OrderResponse findById(Long id);
     List<OrderResponse> findAll();
 //    List<OrderResponse> findByUser(Long userId);
 

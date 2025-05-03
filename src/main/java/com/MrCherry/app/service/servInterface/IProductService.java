@@ -12,11 +12,11 @@ public interface IProductService {
     void deleteById(Long idProduct);
     ProductDto findById(Long productId);
     ProductDto findByName(String productName);
-    List<ProductDto> finAll();
+    List<ProductDto> findAll();
+    ProductDto enableOrDisableProduct(Long productId,boolean status);
 
     //CONSULTAS DE PRODUCTOS
     List<ProductDto> findAvailableProducts();
-    ProductDto enableProduct(Long productId);
 
     //GESTION DE STOCK
     ProductDto setStock(Long id, int stock);

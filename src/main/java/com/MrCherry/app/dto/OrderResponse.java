@@ -17,7 +17,7 @@ public class OrderResponse {
     private OrderStatus orderStatus;
     private List<OrderItemDto> orderItems;
     private ContactInformationDto contactInformation;
-    private AddressDto deliveyAddress;
+    private AddressDto deliveryAddress;
     private UserResponse user;
     private PaymentDto payment;
 

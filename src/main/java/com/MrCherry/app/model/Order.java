@@ -26,7 +26,7 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
 
-    @ManyToMany
+    @OneToMany
     private List<OrderItem> orderItems;
 
     private BigDecimal amount;

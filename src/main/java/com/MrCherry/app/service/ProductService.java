@@ -8,12 +8,14 @@ import com.MrCherry.app.repository.ProductRepository;
 import com.MrCherry.app.service.servInterface.IProductService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProductServiceImplement implements IProductService {
+@Service
+public class ProductService implements IProductService {
     @Autowired
     private ProductRepository productRepository;
 
@@ -22,6 +24,12 @@ public class ProductServiceImplement implements IProductService {
 
 
 
+
+    public Product findProduct(Long productId){
+        return productRepository.findById(productId).orElseThrow(
+                () -> new RuntimeException("asd")
+        );
+    }
 
     @Override
     public ProductDto create(ProductDto productDto) {
@@ -41,10 +49,7 @@ public class ProductServiceImplement implements IProductService {
 
     @Override
     public ProductDto findById(Long productId) {
-        Product product = productRepository.findById(productId).orElseThrow(
-                ()->new RuntimeException("no se encontro")
-        );
-        return productMapper.toDto(product);
+        return productMapper.toDto(findProduct(productId));
     }
 
     @Override
@@ -56,11 +61,9 @@ public class ProductServiceImplement implements IProductService {
     }
 
     @Override
-    public List<ProductDto> finAll() {
+    public List<ProductDto> findAll() {
         List<ProductDto> productDtos = new ArrayList<>();
         List<Product> products = productRepository.findAll();
-        if(products.isEmpty())
-            throw new RuntimeException("la lista esta vacia no se encontraron produtos");
         for(Product product : products){
             productDtos.add(productMapper.toDto(product));
         }
@@ -68,28 +71,22 @@ public class ProductServiceImplement implements IProductService {
     }
 
     @Override
-    public List<ProductDto> findAvailableProducts() {
-        List<Product> products = productRepository.findByStockGreaterThanAndActiveTrue(0);
-        if(products.isEmpty())
-            throw new RuntimeException("No hay productos disponibles");
-        return productMapper.toDto(products);
-    }
-
-    @Override
-    public ProductDto enableProduct(Long productId) {
-        Product product = productRepository.findById(productId).orElseThrow(
-                ()->new RuntimeException("no se encontro")
-        );
-        product.setActive(true);
+    public ProductDto enableOrDisableProduct(Long productId, boolean status) {
+        Product product = findProduct(productId);
+        product.setActive(status);
         product = productRepository.save(product);
         return productMapper.toDto(product);
     }
 
     @Override
+    public List<ProductDto> findAvailableProducts() {
+        List<Product> products = productRepository.findByStockGreaterThanAndActiveTrue(0);
+        return productMapper.toDto(products);
+    }
+
+    @Override
     public ProductDto setStock(Long id, int stock) {
-        Product product = productRepository.findById(id).orElseThrow(
-                ()->new RuntimeException("no se encontro")
-        );
+        Product product = findProduct(id);
         product.setStock(stock);
         product = productRepository.save(product);
         return productMapper.toDto(product);
@@ -97,42 +94,53 @@ public class ProductServiceImplement implements IProductService {
 
     @Override
     public ProductDto increaseStock(Long id, int addedStock) {
-        Product product = productRepository.findById(id).orElseThrow(
-                ()->new RuntimeException("no se encontro")
-        );
-        product.setStock(product.getStock() + addedStock);
-        product = productRepository.save(product);
+        Product product = findProduct(id);
+        int newStock = product.getStock() + addedStock;
+        if(newStock != product.getStock()){
+            product.setStock(newStock);
+            product = productRepository.save(product);
+        }
+
         return productMapper.toDto(product);
     }
 
     @Override
     public ProductDto decreaseStock(Long id, int decreasedStock) {
-        Product product = productRepository.findById(id).orElseThrow(
-                ()->new RuntimeException("no se encontro")
-        );
+        Product product = findProduct(id);
         if(product.getStock()<decreasedStock)
             throw new RuntimeException("No hay stock disponivle");
-        product.setStock(product.getStock() - decreasedStock);
-        product = productRepository.save(product);
-        return productMapper.toDto(product);        }
+        int newStock = product.getStock() - decreasedStock;
+        if(newStock != product.getStock()){
+            product.setStock(newStock);
+            product = productRepository.save(product);
+        }
+        return productMapper.toDto(product);
+    }
 
     @Override
     public boolean checkStockById(Long id) {
-        Product product = productRepository.findById(id).orElseThrow(
-                ()->new RuntimeException("no se encontro")
-        );
+        Product product = findProduct(id);
         return product.getStock() > 0;
     }
 
     @Override
     @Transactional
     public void SaleProccess(List<OrderItem> orderItems) {
+        for (OrderItem item : orderItems) {
+            Product product = this.findProduct(item.getProduct().getId());
+            if (!product.isActive())
+                throw new RuntimeException("El producto " + product.getName() + " no está disponible");
+
+            if (product.getStock() < item.getQuantity())
+                throw new RuntimeException("Stock insuficiente para el producto " + product.getName());
+        }
         orderItems.forEach(orderItem -> {
             this.decreaseStock(orderItem.getProduct().getId(),orderItem.getQuantity());
         });
     }
 
     @Override
+    @Transactional
     public void returnProcess(List<OrderItem> orderItems) {
         orderItems.forEach(orderItem -> {
             this.increaseStock(orderItem.getProduct().getId(),orderItem.getQuantity());

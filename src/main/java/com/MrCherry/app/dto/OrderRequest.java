@@ -17,7 +17,6 @@ public class OrderRequest {
     @NotNull
     private DeliveryType deliveryType;
     private ContactInformationDto contactInformation;
-    @NotNull
     private AddressDto deliveryAddress;
     private UserResponse user;
 
