@@ -2,6 +2,7 @@ package com.MrCherry.app.model;
 
 import com.MrCherry.app.model.enums.DeliveryType;
 import com.MrCherry.app.model.enums.OrderStatus;
+import com.MrCherry.app.model.enums.PaymentType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

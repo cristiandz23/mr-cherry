@@ -24,7 +24,7 @@ public class ProductDto {
     @Positive(message = "El saldo debe ser positivo")
     private int stock;
     private String description;
-    private List<String> images;
+    private List<ImageDto> images;
     private boolean active;
 
 }

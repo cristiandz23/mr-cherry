@@ -95,7 +95,7 @@ public class OrderService implements IOrderService {
 
 
 
-    private boolean isValidTransition(OrderStatus current, OrderStatus next) {
+    public boolean isValidTransition(OrderStatus current, OrderStatus next) {
         return switch (current) {
             case CREATED -> List.of(PAYED, CANCELED, REJECTED).contains(next);
             case PAYED ->   List.of(PROCESS,CANCELED).contains(next);
@@ -111,7 +111,7 @@ public class OrderService implements IOrderService {
     @Override
     @Transactional
     public OrderResponse payOrder(Long id) {
-        Order order =findOrder(id);
+        Order order = findOrder(id);
         productService.SaleProccess(order.getOrderItems());
         return updateOrderStatus(order.getId(), PAYED);
 

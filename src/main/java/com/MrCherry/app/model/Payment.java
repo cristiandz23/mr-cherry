@@ -4,6 +4,7 @@ import com.MrCherry.app.model.enums.PaymentStatus;
 import com.MrCherry.app.model.enums.PaymentType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Data
 @Entity
+@Builder
 public class Payment {
 
     @Id

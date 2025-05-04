@@ -1,10 +1,11 @@
 package com.MrCherry.app.dto;
 
-import com.MrCherry.app.model.enums.PaymentStatus;
 import com.MrCherry.app.model.enums.PaymentType;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 @NoArgsConstructor
@@ -12,8 +13,8 @@ import java.math.BigDecimal;
 public class PaymentRequest {
 
     private BigDecimal amount;
+    @NotNull @NotEmpty
     private PaymentType paymentType;
-    private PaymentStatus paymentStatus;
     private OrderResponse order;
 
 }

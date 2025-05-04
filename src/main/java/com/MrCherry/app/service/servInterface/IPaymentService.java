@@ -7,6 +7,7 @@ import com.mercadopago.exceptions.MPException;
 import com.mercadopago.resources.preference.Preference;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 public interface IPaymentService {
 
@@ -33,7 +34,7 @@ public interface IPaymentService {
          * Maneja el callback/webhook que Mercado Pago envía cuando cambia el estado del pago.
          * - Actualiza tu entidad Payment y, si aplica, el estado de la orden.
          */
-        void handleMercadoPagoWebhook(MpNotification notification);
+        PaymentResponse handleMercadoPagoWebhook(Map<String,Object> response) throws MPException, MPApiException;
 
         /**
          * Consulta el estado de un pago en Mercado Pago.

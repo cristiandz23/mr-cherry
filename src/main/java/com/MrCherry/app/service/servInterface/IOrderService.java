@@ -3,6 +3,7 @@ package com.MrCherry.app.service.servInterface;
 import com.MrCherry.app.dto.OrderRequest;
 import com.MrCherry.app.dto.OrderResponse;
 import com.MrCherry.app.model.Order;
+import com.MrCherry.app.model.enums.OrderStatus;
 
 import java.util.List;
 
@@ -14,6 +15,10 @@ public interface IOrderService {
     OrderResponse findById(Long id);
     List<OrderResponse> findAll();
     Order findOrder(Long orderId);
+
+     boolean isValidTransition(OrderStatus current, OrderStatus next);
+
+
 
 //    List<OrderResponse> findByUser(Long userId);
 
