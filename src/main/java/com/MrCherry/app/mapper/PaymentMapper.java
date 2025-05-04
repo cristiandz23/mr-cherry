@@ -1,14 +1,14 @@
 package com.MrCherry.app.mapper;
 
-import com.MrCherry.app.dto.PaymentDto;
+import com.MrCherry.app.dto.PaymentRequest;
+import com.MrCherry.app.dto.PaymentResponse;
 import com.MrCherry.app.model.Payment;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface PaymentMapper {
-
-    Payment toPayment(PaymentDto paymentDto);
-
-    PaymentDto toDto(Payment payment);
+    @Mapping(source = "order.id",target ="orderId")
+     PaymentResponse toResponse(Payment payment);
 
 }

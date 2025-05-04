@@ -2,6 +2,7 @@ package com.MrCherry.app.service.servInterface;
 
 import com.MrCherry.app.dto.OrderRequest;
 import com.MrCherry.app.dto.OrderResponse;
+import com.MrCherry.app.model.Order;
 
 import java.util.List;
 
@@ -12,6 +13,8 @@ public interface IOrderService {
     void deleteById(Long id);
     OrderResponse findById(Long id);
     List<OrderResponse> findAll();
+    Order findOrder(Long orderId);
+
 //    List<OrderResponse> findByUser(Long userId);
 
 

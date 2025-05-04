@@ -33,8 +33,8 @@ public class OrderService implements IOrderService {
     private IProductService productService;
 
 
-
-    private Order findOrder(Long orderId){
+    @Override
+    public Order findOrder(Long orderId){
         return orderRepository.findById(orderId).orElseThrow(
                 ()->new RuntimeException("No se encontro"));
 

@@ -1,6 +1,5 @@
 package com.MrCherry.app.dto;
 
-import com.MrCherry.app.model.*;
 import com.MrCherry.app.model.enums.OrderStatus;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,7 +18,7 @@ public class OrderResponse {
     private ContactInformationDto contactInformation;
     private AddressDto deliveryAddress;
     private UserResponse user;
-    private PaymentDto payment;
+    private PaymentRequest payment;
 
 
 }
