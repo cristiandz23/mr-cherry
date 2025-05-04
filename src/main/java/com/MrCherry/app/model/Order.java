@@ -39,7 +39,7 @@ public class Order {
 
     @OneToOne(orphanRemoval = false)
     @JoinColumn(name = "address_id",nullable = false)
-    private Address deliveyAddress;
+    private Address deliveryAddress;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
