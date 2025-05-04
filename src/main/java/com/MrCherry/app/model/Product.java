@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.mapstruct.EnumMapping;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @NoArgsConstructor
@@ -27,5 +28,7 @@ public class Product {
     private String description;
     @OneToMany(cascade = CascadeType.ALL,orphanRemoval = false)
     private List<Image> images;
+    private boolean active;
+    private LocalDate createdAt;
 
 }

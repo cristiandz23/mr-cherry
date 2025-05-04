@@ -1,18 +1,16 @@
 package com.MrCherry.app.repository;
 
+import com.MrCherry.app.model.OrderItem;
 import com.MrCherry.app.model.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product,Long> {
+public interface OrderItemRepository extends JpaRepository<OrderItem,Long> {
 
-    Optional<Product> findByName(String name);
-
-    List<Product> findByStockGreaterThanAndActiveTrue(int stock);
+    Optional<OrderItem> findByProductAndQuantity(Product product, int quantity);
 
 
 }

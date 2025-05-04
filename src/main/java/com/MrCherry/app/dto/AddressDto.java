@@ -1,10 +1,12 @@
 package com.MrCherry.app.dto;
 
-import jakarta.persistence.Column;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-
+@NoArgsConstructor
+@Data
 public class AddressDto {
 
     private Long id;
