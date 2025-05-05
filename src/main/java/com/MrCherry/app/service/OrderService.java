@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.MrCherry.app.model.enums.OrderStatus.*;
@@ -77,6 +76,14 @@ public class OrderService implements IOrderService {
     @Override
     public List<OrderResponse> findAll() {
         return orderRepository.findAll()
+                .stream()
+                .map(orderMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public List<OrderResponse> finOrderPayed() {
+        return orderRepository.findByOrderStatus(PAYED)
                 .stream()
                 .map(orderMapper::toResponse)
                 .toList();

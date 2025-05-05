@@ -5,7 +5,6 @@ import com.MrCherry.app.mapper.PaymentMapper;
 import com.MrCherry.app.model.Order;
 import com.MrCherry.app.model.OrderItem;
 import com.MrCherry.app.model.Payment;
-import com.MrCherry.app.model.enums.DeliveryType;
 import com.MrCherry.app.model.enums.OrderStatus;
 import com.MrCherry.app.model.enums.PaymentStatus;
 import com.MrCherry.app.model.enums.PaymentType;
@@ -20,7 +19,6 @@ import com.mercadopago.client.preference.PreferenceRequest;
 import com.mercadopago.core.MPRequestOptions;
 import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
-import com.mercadopago.net.MPRequest;
 import com.mercadopago.resources.preference.Preference;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +27,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 
+import static com.MrCherry.app.configuration.ApplicationEnvironment.MP_ACCESS_TOKEN;
 import static com.mercadopago.serialization.Serializer.deserializeFromJson;
 
 public class PaymentService implements IPaymentService {
@@ -40,7 +39,6 @@ public class PaymentService implements IPaymentService {
     @Autowired
     private PaymentMapper paymentMapper;
 
-    private static final String MP_ACCESS_TOKEN = "ASD";
     @Override
     @Transactional
     public PaymentResponse payWithCash(Long orderId) {
@@ -105,12 +103,9 @@ public class PaymentService implements IPaymentService {
                 payment1.setPaymentStatus(PaymentStatus.APPROVED);
                 return paymentMapper.toResponse(paymentRepository.save(payment1));
             }
-
-
         }catch (ClassCastException ex){
             throw new RuntimeException("Ocurrio un error capurando los datos en el webhook");
         }
-
 
     }
 

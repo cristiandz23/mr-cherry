@@ -23,8 +23,6 @@ public class ProductService implements IProductService {
     private ProductMapper productMapper;
 
 
-
-
     public Product findProduct(Long productId){
         return productRepository.findById(productId).orElseThrow(
                 () -> new RuntimeException("asd")
@@ -35,7 +33,7 @@ public class ProductService implements IProductService {
     public ProductDto create(ProductDto productDto) {
         Product product = productMapper.toProduct(productDto);
         product.setCreatedAt(LocalDate.now());
-        product.setActive(true);
+        product.setActive(false);
         product = productRepository.save(product);
         return productMapper.toDto(product);
     }

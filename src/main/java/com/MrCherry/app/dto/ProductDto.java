@@ -17,11 +17,11 @@ public class ProductDto {
     private Long id;
     @NotEmpty @NotBlank
     private String name;
-    @NotEmpty @NotBlank     @Positive(message = "El saldo debe ser positivo")
+    @NotEmpty @NotBlank  @Positive(message = "El precio no debe ser menor que 0")
     private BigDecimal price;
     @NotNull
     private ProductCategory productCategory;
-    @Positive(message = "El saldo debe ser positivo")
+    @Positive(message = "El STOCK debe ser MAYOR QUE CERO")
     private int stock;
     private String description;
     private List<ImageDto> images;

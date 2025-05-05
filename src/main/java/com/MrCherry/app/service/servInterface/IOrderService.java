@@ -14,6 +14,9 @@ public interface IOrderService {
     void deleteById(Long id);
     OrderResponse findById(Long id);
     List<OrderResponse> findAll();
+    List<OrderResponse> finOrderPayed();
+
+
     Order findOrder(Long orderId);
 
      boolean isValidTransition(OrderStatus current, OrderStatus next);
@@ -32,6 +35,7 @@ public interface IOrderService {
     OrderResponse rejectOrder(Long orderId);
     OrderResponse deliverOrder(Long orderId);
     OrderResponse finishOrder(Long orderId);
+
 
 
 
