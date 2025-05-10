@@ -1,6 +1,7 @@
 package com.MrCherry.app.service;
 
 import com.MrCherry.app.dto.OrderItemDto;
+import com.MrCherry.app.model.Order;
 import com.MrCherry.app.model.OrderItem;
 import com.MrCherry.app.model.Product;
 import com.MrCherry.app.repository.OrderItemRepository;
@@ -20,22 +21,24 @@ public class OrderItemService implements IOrderItemService {
     @Autowired
     private ProductService productService;
     @Override
-    public BigDecimal calculateAmount(List<OrderItemDto> orderItems) {
+    public BigDecimal calculateAmount(List<OrderItem> orderItems) {
         BigDecimal total = new BigDecimal(0);
-        for(OrderItemDto orderItemDto : orderItems){
-            total = total.add(productService.findById(orderItemDto.getProductId()).getPrice());
+        for(OrderItem orderItemDto : orderItems){
+            total = total.add(orderItemDto.getProduct().getPrice().multiply(new BigDecimal(orderItemDto.getQuantity())));
         }
 
         return total;
     }
 
     @Override
-    public List<OrderItem> getSameMenu(List<OrderItemDto> orderItems) {
+    public List<OrderItem> getSameMenu(List<OrderItemDto> orderItems,Order newOrder) {
         List<OrderItem> items = new ArrayList<>();
-        OrderItem item = new OrderItem();
         orderItems.forEach(order -> {
-            item.setProduct(productService.findProduct(order.getProductId()));
-            item.setQuantity(order.getQuantity());
+            OrderItem item = OrderItem.builder()
+                    .product(productService.findProduct(order.getProductId()))
+                    .quantity(order.getQuantity())
+                    .order(newOrder)
+                    .build();
             items.add(item);
         });
         return items;

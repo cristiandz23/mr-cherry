@@ -27,7 +27,13 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
 
-    @OneToMany
+
+//    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+//    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+//    @JoinColumn(name = "order_id", nullable = false) // Esta es la CLAVE
+//    private List<OrderItem> orderItems;
+// Relación bidireccional: Un Order tiene varios OrderItems
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems;
 
     private BigDecimal amount;
@@ -35,11 +41,18 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private DeliveryType deliveryType;
 
-    @OneToOne
-    private ContactInformation contactInformation;
 
-    @OneToOne(orphanRemoval = false)
-    @JoinColumn(name = "address_id",nullable = false)
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "contact_information_id")
+    private ContactInformation contactInformation;
+//
+//    @ManyToOne(cascade = CascadeType.ALL)
+//    @JoinColumn(name = "address_id",nullable = false)
+//    private Address deliveryAddress;
+
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id", nullable = false)
     private Address deliveryAddress;
 
     @ManyToOne

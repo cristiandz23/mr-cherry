@@ -4,12 +4,12 @@ package com.MrCherry.app.service;
 import com.MrCherry.app.dto.OrderRequest;
 import com.MrCherry.app.dto.OrderResponse;
 import com.MrCherry.app.mapper.OrderMapper;
+import com.MrCherry.app.model.Address;
+import com.MrCherry.app.model.ContactInformation;
 import com.MrCherry.app.model.Order;
 import com.MrCherry.app.model.enums.OrderStatus;
 import com.MrCherry.app.repository.OrderRepository;
-import com.MrCherry.app.service.servInterface.IOrderItemService;
-import com.MrCherry.app.service.servInterface.IOrderService;
-import com.MrCherry.app.service.servInterface.IProductService;
+import com.MrCherry.app.service.servInterface.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,10 @@ public class OrderService implements IOrderService {
     private IOrderItemService orderItemService;
     @Autowired
     private IProductService productService;
-
+    @Autowired
+    private IAddressService addressService;
+    @Autowired
+    private IContactInformation contactInformation;
 
     @Override
     public Order findOrder(Long orderId){
@@ -41,13 +44,22 @@ public class OrderService implements IOrderService {
 
     @Override
     public OrderResponse create(OrderRequest orderRequest) {
-        if(orderRequest.getContactInformation() == null && orderRequest.getUser() == null)
+        if (orderRequest.getContactInformation() == null && orderRequest.getUser() == null)
             throw new RuntimeException("UNO TIENE QUE SER NO NULL");
         Order newOrder = orderMapper.toOrderFromRequest(orderRequest);
+
+        Address address = addressService.findByEntity(newOrder.getDeliveryAddress());
+        if (address != null){
+            newOrder.setDeliveryAddress(address);}
+
+        ContactInformation contact = contactInformation.findByEntity(newOrder.getContactInformation());
+        if(contact != null)
+            newOrder.setContactInformation(contact);
+
         newOrder.setOrderDate(LocalDate.now());
         newOrder.setOrderStatus(CREATED);
-        newOrder.setAmount(orderItemService.calculateAmount(orderRequest.getOrderItems()));
-        newOrder.setOrderItems(orderItemService.getSameMenu(orderRequest.getOrderItems()));
+        newOrder.setOrderItems(orderItemService.getSameMenu(orderRequest.getOrderItems(),newOrder));
+        newOrder.setAmount(orderItemService.calculateAmount(newOrder.getOrderItems()));
         newOrder = orderRepository.save(newOrder);
         return orderMapper.toResponse(newOrder);
     }
