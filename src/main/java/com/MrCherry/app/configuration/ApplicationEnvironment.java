@@ -1,5 +1,6 @@
 package com.MrCherry.app.configuration;
 
+import com.mercadopago.MercadoPagoConfig;
 import io.github.cdimascio.dotenv.Dotenv;
 
 public class ApplicationEnvironment {

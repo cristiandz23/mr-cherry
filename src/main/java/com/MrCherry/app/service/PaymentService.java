@@ -11,6 +11,7 @@ import com.MrCherry.app.model.enums.PaymentType;
 import com.MrCherry.app.repository.PaymentRepository;
 import com.MrCherry.app.service.servInterface.IOrderService;
 import com.MrCherry.app.service.servInterface.IPaymentService;
+import com.MrCherry.app.service.servInterface.IProductService;
 import com.mercadopago.client.payment.PaymentClient;
 import com.mercadopago.client.preference.PreferenceBackUrlsRequest;
 import com.mercadopago.client.preference.PreferenceClient;
@@ -22,6 +23,7 @@ import com.mercadopago.exceptions.MPException;
 import com.mercadopago.resources.preference.Preference;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -29,8 +31,10 @@ import java.util.*;
 
 import static com.MrCherry.app.configuration.ApplicationEnvironment.MP_ACCESS_TOKEN;
 import static com.mercadopago.serialization.Serializer.deserializeFromJson;
-
+@Service
 public class PaymentService implements IPaymentService {
+
+    private static String ORDER_ID = "orderId";
 
     @Autowired
     private IOrderService orderService;
@@ -38,6 +42,8 @@ public class PaymentService implements IPaymentService {
     private PaymentRepository paymentRepository;
     @Autowired
     private PaymentMapper paymentMapper;
+    @Autowired
+    private IProductService productService;
 
     @Override
     @Transactional
@@ -54,63 +60,71 @@ public class PaymentService implements IPaymentService {
     }
 
     @Override
-    public String doPayment(Long orderId) throws MPException, MPApiException {
+    public PaymentResponse doPayment(Long orderId) throws MPException, MPApiException {
 
         Order order = orderService.findOrder(orderId);
-        if(!orderService.isValidTransition(order.getOrderStatus(),OrderStatus.PAYED)){
-            throw new RuntimeException("EL ESTADO DE LA ORDEN NO ES VALIDO");
+
+        productService.verifyStock(order.getOrderItems());
+
+        orderService.validateTransition(order.getOrderStatus(),OrderStatus.PAYED);
+
+        if(order.getPayment().getPaymentType() == PaymentType.VIRTUAL_WALLET){
+            Preference preference = payOrderWhitMercadoPago(order);
+
+            return PaymentResponse.builder()
+                    .url(preference.getInitPoint())
+                    .paymentStatus(PaymentStatus.PENDING)
+                    .amount(order.getAmount())
+                    .id(order.getPayment().getId())
+                    .orderId(order.getId())
+                    .paymentType(order.getPayment().getPaymentType())
+                    .build();
         }
-        if(order.getPayment().getPaymentType()== PaymentType.VIRTUAL_WALLET){
-            payOrderWhitMercadoPago(order.getId());
-        } else if (order.getPayment().getPaymentType() == PaymentType.CASH) {
-            payWithCash(order.getId());
-        }
-        Preference preference = payOrderWhitMercadoPago(order.getId());
-        return preference.getExternalReference();
+        throw new RuntimeException("Permitido el pago solo con mercado pago");
+    }
+
+    public void hola(Map<String,Object> response){
+        Map<String,Object> data = (Map<String, Object>) response.get("data");
+        Long id = Long.parseLong((String) data.get("id"));//extraemos el id del pago de marcado pago
+
+
     }
 
     @Override
-    public PaymentResponse handleMercadoPagoWebhook(Map<String,Object> response) throws MPException, MPApiException {
-        try{
-            Map<String,Object> data = (Map<String, Object>) response.get("data");
-            Long id = Long.parseLong((String) data.get("id"));
-
+    public void handleMercadoPagoWebhook(Map<String,Object> response) throws MPException, MPApiException {
+        System.out.println("Se comenzo con la notificacion con response " + response.toString());
+        var data = (Map<String, Object>) response.get("data");
+        if (data != null){
+            Long id = Long.parseLong((String) data.get("id"));//extraemos el id del pago de marcado pago
             PaymentClient client = new PaymentClient();
-
-            com.mercadopago.resources.payment.Payment payment = client.get(id);
-            com.mercadopago.resources.payment.Payment result = deserializeFromJson(com.mercadopago.resources.payment.Payment.class, payment.getResponse().getContent());
-
-            Map<String,Object> metaData=  result.getMetadata();
-            Long orderId = Long.parseLong((String) metaData.get("orderId"));
+            var payment = client.get(id, MPRequestOptions.builder().accessToken(MP_ACCESS_TOKEN).build());
+            Long orderId = Long.parseLong(payment.getExternalReference());
             Order order = orderService.findOrder(orderId);
-
-            String status = result.getStatus();
-            System.out.println(result.getStatusDetail());
-            System.out.println(result.getTransactionDetails());
-            System.out.println(result.getTransactionAmount());
-            System.out.println(result.getDateApproved());
-            System.out.println(result.getDescription());
-            Payment payment1 = order.getPayment();
-            payment1.setPaymentDate(LocalDate.now());
-            payment1.setAmount(order.getAmount());
-            payment1.setPaymentType(PaymentType.VIRTUAL_WALLET);
-            if (status == "approved"){
+            System.out.println("Status: " + payment.getStatus());
+            System.out.println("Status detail: " + payment.getStatusDetail());
+            System.out.println("Transaction detail: " + payment.getTransactionDetails());
+            System.out.println("Transaction amount: " + payment.getTransactionAmount());
+            System.out.println("Date approved: " + payment.getDateApproved());
+            System.out.println("Description: " + payment.getDescription());
+            Payment paymentToSave = order.getPayment();
+            paymentToSave.setPaymentDate(LocalDate.now());
+            paymentToSave.setAmount(order.getAmount());
+            if ("approved".equals(payment.getStatus())){
+                System.out.println("fue aprobrado");
                 orderService.payOrder(orderId);
-                payment1.setPaymentStatus(PaymentStatus.APPROVED);
-                return paymentMapper.toResponse(paymentRepository.save(payment1));
+                paymentToSave.setPaymentStatus(PaymentStatus.APPROVED);
+                paymentRepository.save(paymentToSave);
             }else {
+                System.out.println("fue trachazado");
                 orderService.rejectOrder(orderId);
-                payment1.setPaymentStatus(PaymentStatus.APPROVED);
-                return paymentMapper.toResponse(paymentRepository.save(payment1));
+                paymentToSave.setPaymentStatus(PaymentStatus.REJECT);
+                paymentRepository.save(paymentToSave);
             }
-        }catch (ClassCastException ex){
-            throw new RuntimeException("Ocurrio un error capurando los datos en el webhook");
         }
 
     }
 
-    private Preference payOrderWhitMercadoPago(Long orderId) throws MPException, MPApiException {
-        Order order = orderService.findOrder(orderId);
+    private Preference payOrderWhitMercadoPago(Order order) throws MPException, MPApiException {
         List<OrderItem> orderItem = order.getOrderItems();
         List<PreferenceItemRequest> items = new ArrayList<>();
 
@@ -124,17 +138,21 @@ public class PaymentService implements IPaymentService {
             items.add(preference);
 
         });
+
         PreferenceBackUrlsRequest urls = PreferenceBackUrlsRequest.builder()
                 .success("asd")//CPNFIGURAR ESTAS URLS
                 .failure("")
                 .build();
+
         PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                 .binaryMode(true)
                 .items(items)
-                .backUrls(urls)
+                .externalReference(String.valueOf(order.getId()))
+                .notificationUrl("https://57d9-131-221-65-229.ngrok-free.app/payment/api/Mp-notification")
                 .marketplace("Mr. Cherry")
                 .metadata(Map.of( "orderId", order.getId()))
                 .build();
+
         PreferenceClient preferenceClient = new PreferenceClient();
         MPRequestOptions mpRequestOptions = MPRequestOptions.builder()
                 .accessToken(MP_ACCESS_TOKEN)

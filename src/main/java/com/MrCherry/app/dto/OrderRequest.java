@@ -19,5 +19,6 @@ public class OrderRequest {
     private ContactInformationDto contactInformation;
     private AddressDto deliveryAddress;
     private UserResponse user;
-
+    @NotNull
+    private PaymentRequest payment;
 }

@@ -17,8 +17,10 @@ public interface IProductService {
 
     //CONSULTAS DE PRODUCTOS
     List<ProductDto> findAvailableProducts();
+     void verifyStock(List<OrderItem> orderItems);
 
-    //GESTION DE STOCK
+
+        //GESTION DE STOCK
     ProductDto setStock(Long id, int stock);
     ProductDto increaseStock(Long id, int addedStock);
     ProductDto decreaseStock(Long id, int decreasedStock);

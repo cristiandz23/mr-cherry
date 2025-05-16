@@ -47,7 +47,7 @@ public class OrderService implements IOrderService {
         if (orderRequest.getContactInformation() == null && orderRequest.getUser() == null)
             throw new RuntimeException("UNO TIENE QUE SER NO NULL");
         Order newOrder = orderMapper.toOrderFromRequest(orderRequest);
-
+        System.out.println("asd"+ newOrder.getPayment());
         Address address = addressService.findByEntity(newOrder.getDeliveryAddress());
         if (address != null){
             newOrder.setDeliveryAddress(address);}
@@ -64,6 +64,9 @@ public class OrderService implements IOrderService {
         return orderMapper.toResponse(newOrder);
     }
 
+
+
+
     @Override
     public void deleteById(Long id) {
         Order order = findOrder(id);
@@ -72,6 +75,7 @@ public class OrderService implements IOrderService {
         orderRepository.delete(order);
 
     }
+
     private boolean isValidElimination(OrderStatus current){
         return switch (current){
             case REJECTED, DELIVERED, CREATED -> true;
@@ -109,12 +113,19 @@ public class OrderService implements IOrderService {
         }
         order.setOrderStatus(newStatus);
        return orderMapper.toResponse(orderRepository.save(order));
+    }
+
+
+    @Override
+    public void validateTransition(OrderStatus current, OrderStatus next){
+        if(!this.isValidTransition(current, next)){
+            throw new RuntimeException("Transicion ivalida");
+        }
 
     }
 
 
-
-    public boolean isValidTransition(OrderStatus current, OrderStatus next) {
+    private boolean isValidTransition(OrderStatus current, OrderStatus next) {
         return switch (current) {
             case CREATED -> List.of(PAYED, CANCELED, REJECTED).contains(next);
             case PAYED ->   List.of(PROCESS,CANCELED).contains(next);
@@ -160,7 +171,7 @@ public class OrderService implements IOrderService {
 
     @Override
     public OrderResponse deliverOrder(Long orderId) {
-        return this.updateOrderStatus(orderId, DELIVERED);
+        return this.updateOrderStatus(orderId,DELIVERED);
     }
 
     @Override

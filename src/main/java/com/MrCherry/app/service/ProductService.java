@@ -1,6 +1,7 @@
 package com.MrCherry.app.service;
 
 import com.MrCherry.app.dto.ProductDto;
+import com.MrCherry.app.exceptions.ProductNotFoundException;
 import com.MrCherry.app.mapper.ProductMapper;
 import com.MrCherry.app.model.OrderItem;
 import com.MrCherry.app.model.Product;
@@ -25,7 +26,7 @@ public class ProductService implements IProductService {
 
     public Product findProduct(Long productId){
         return productRepository.findById(productId).orElseThrow(
-                () -> new RuntimeException("asd")
+                () -> new ProductNotFoundException("No se encontro el producto con id " + productId)
         );
     }
 
@@ -120,18 +121,22 @@ public class ProductService implements IProductService {
         Product product = findProduct(id);
         return product.getStock() > 0;
     }
-
     @Override
-    @Transactional
-    public void SaleProccess(List<OrderItem> orderItems) {
+    public void verifyStock(List<OrderItem> orderItems){
         for (OrderItem item : orderItems) {
             Product product = this.findProduct(item.getProduct().getId());
             if (!product.isActive())
-                throw new RuntimeException("El producto " + product.getName() + " no está disponible");
+                throw new RuntimeException("El producto " + product.getName() + " no está disponible para la venta");
 
             if (product.getStock() < item.getQuantity())
                 throw new RuntimeException("Stock insuficiente para el producto " + product.getName());
         }
+    }
+
+    @Override
+    @Transactional
+    public void SaleProccess(List<OrderItem> orderItems) {
+        verifyStock(orderItems);
         orderItems.forEach(orderItem -> {
             this.decreaseStock(orderItem.getProduct().getId(),orderItem.getQuantity());
         });

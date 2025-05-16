@@ -28,13 +28,13 @@ public interface IPaymentService {
          * - Devuelve la URL o el id de preferencia para redirigir al cliente.
          */
 //        Preference payOrderWhitMercadoPago(Long orderId) throws MPException, MPApiException;
-        String doPayment(Long orderId) throws MPException, MPApiException;
+        PaymentResponse doPayment(Long orderId) throws MPException, MPApiException;
 
         /**
          * Maneja el callback/webhook que Mercado Pago envía cuando cambia el estado del pago.
          * - Actualiza tu entidad Payment y, si aplica, el estado de la orden.
          */
-        PaymentResponse handleMercadoPagoWebhook(Map<String,Object> response) throws MPException, MPApiException;
+        void handleMercadoPagoWebhook(Map<String,Object> response) throws MPException, MPApiException;
 
         /**
          * Consulta el estado de un pago en Mercado Pago.

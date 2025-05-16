@@ -11,4 +11,6 @@ public interface PaymentMapper {
     @Mapping(source = "order.id",target ="orderId")
      PaymentResponse toResponse(Payment payment);
 
+    Payment toPayment(PaymentRequest paymentRequest);
+
 }

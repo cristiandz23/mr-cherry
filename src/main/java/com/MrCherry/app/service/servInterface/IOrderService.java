@@ -19,7 +19,7 @@ public interface IOrderService {
 
     Order findOrder(Long orderId);
 
-     boolean isValidTransition(OrderStatus current, OrderStatus next);
+     void validateTransition(OrderStatus current, OrderStatus next);
 
 
 

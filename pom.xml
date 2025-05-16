@@ -19,6 +19,10 @@
 		<version.lombok>1.18.30</version.lombok>
 		<version.mapstruct>1.6.3</version.mapstruct>
 		<version.mapstruct-lombok>0.2.0</version.mapstruct-lombok>
+
+		<ngrok.version>0.5.0</ngrok.version>
+
+
 	</properties>
 	<dependencies>
 			<dependency>
@@ -79,6 +83,25 @@
 			<artifactId>java-dotenv</artifactId>
 			<version>5.2.2</version>
 		</dependency>
+
+		<dependency>
+			<groupId>com.ngrok</groupId>
+			<artifactId>ngrok-java</artifactId>
+			<version>${ngrok.version}</version>
+		</dependency>
+
+<!--		<dependency>-->
+<!--			<groupId>com.ngrok</groupId>-->
+<!--			<artifactId>ngrok-java</artifactId>-->
+<!--			<version>0.6.3</version> &lt;!&ndash; Verificá que esta sea la última versión que tengas &ndash;&gt;-->
+<!--		</dependency>-->
+		<dependency>
+			<groupId>com.ngrok</groupId>
+			<artifactId>ngrok-java-native</artifactId>
+			<version>${ngrok.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+
 
 		<dependency>
 			<groupId>javax.validation</groupId>
